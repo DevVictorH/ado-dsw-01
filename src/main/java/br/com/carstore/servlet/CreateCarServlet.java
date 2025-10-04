@@ -17,35 +17,19 @@ public class CreateCarServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 
+        String carId = req.getParameter("id");
         String carName = req.getParameter("car-name");
 
-        Car car = new Car(carName);
+        CarDAO carDao = new CarDAO();
+        Car car = new Car(carId, carName);
 
-        new CarDAO().createCar(car);
+        if (carId.isBlank()) {
+            carDao.createCar(car);
+        } else {
+            carDao.updateCar(car);
+        }
 
-        req.getRequestDispatcher("index.html").forward(req, resp);
+        resp.sendRedirect("/find-all-cars");
 
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
-        HttpSession s = req.getSession(false);
-        String carName = (s != null && s.getAttribute("carName") != null)
-                ? s.getAttribute("carName").toString()
-                : "";
-
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write("{\"carName\":\"" + jsonEscape(carName) + "\"}");
-    }
-
-    private String jsonEscape(String s) {
-        if (s == null) return "";
-        return s.replace("\\","\\\\").replace("\"","\\\"")
-                .replace("\b","\\b").replace("\f","\\f")
-                .replace("\n","\\n").replace("\r","\\r")
-                .replace("\t","\\t");
     }
 }
